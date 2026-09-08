@@ -743,6 +743,7 @@ fn cmd_list(args: &[String]) -> anyhow::Result<()> {
 // ---------------------------------------------------------------------------
 
 fn cmd_pack(args: &[String]) -> anyhow::Result<()> {
+    let mut emit_config_p: Option<std::path::PathBuf> = None;
     if args.is_empty() {
         eprintln!("Usage: mcpg-plugin pack \\");
         eprintln!("    --descriptor <plugin.yaml> \\");
@@ -808,6 +809,13 @@ fn cmd_pack(args: &[String]) -> anyhow::Result<()> {
                 license_p =
                     Some(PathBuf::from(args.get(i + 1).ok_or_else(|| {
                         anyhow::anyhow!("--license requires a path argument")
+                    })?));
+                i += 2;
+            }
+            "--emit-config" => {
+                emit_config_p =
+                    Some(PathBuf::from(args.get(i + 1).ok_or_else(|| {
+                        anyhow::anyhow!("--emit-config requires a path argument")
                     })?));
                 i += 2;
             }
@@ -908,6 +916,15 @@ fn cmd_pack(args: &[String]) -> anyhow::Result<()> {
 
     let size = std::fs::metadata(&output_p).map(|m| m.len()).unwrap_or(0);
     println!("packed: {} ({} bytes)", output_p.display(), size);
+
+    // The OCI config blob, for publishers that push the layer with a
+    // different tool. Built by the same function `push` uses, so the two
+    // cannot describe one artefact differently.
+    if let Some(cfg_path) = emit_config_p {
+        let cfg = mcpg_plugin_host::oci::artifact_config_for(&output_p)?;
+        std::fs::write(&cfg_path, serde_json::to_vec(&cfg)?)?;
+        println!("config: {}", cfg_path.display());
+    }
     Ok(())
 }
 
