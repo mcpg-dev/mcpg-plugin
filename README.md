@@ -45,6 +45,14 @@ rest print their usage.
 
 ## Install / Run
 
+`mcpg-plugin` ships with `mcpg` in the `model-context-protocol-gateway`
+package:
+
+```bash
+npm install -g model-context-protocol-gateway   # or: pipx install / cargo install model-context-protocol-gateway
+curl -fsSL https://raw.githubusercontent.com/mcpg-dev/mcpg/main/install.sh | sh -s -- --bin mcpg-plugin   # this tool alone
+```
+
 Build from source:
 
 ```bash
